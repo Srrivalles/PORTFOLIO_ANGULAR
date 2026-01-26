@@ -1,6 +1,6 @@
 /**
- * PORTFÓLIO MODERNO - JAVASCRIPT SIMPLIFICADO
- * Tudo em um único arquivo, sem localStorage
+ * PORTFÓLIO MODERNO - VERSÃO 2.0
+ * Com Parallax, Animações Sofisticadas e Efeitos Avançados
  */
 
 class Portfolio {
@@ -22,6 +22,7 @@ class Portfolio {
     this.setupProjectFilter();
     this.setupTypewriter();
     this.setupThemeToggle();
+    this.setupParallax();
   }
 
   // === NAVBAR ===
@@ -31,7 +32,6 @@ class Portfolio {
     window.addEventListener('scroll', () => {
       const currentScroll = window.scrollY;
       
-      // Adiciona classe quando rola
       if (currentScroll > 50) {
         this.navbar.classList.add('scrolled');
       } else {
@@ -50,14 +50,12 @@ class Portfolio {
       this.navLinks.classList.toggle('active');
     });
     
-    // Fecha o menu ao clicar em um link
     document.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
         this.navLinks.classList.remove('active');
       });
     });
     
-    // Fecha o menu ao clicar fora
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.navbar')) {
         this.navLinks.classList.remove('active');
@@ -85,7 +83,6 @@ class Portfolio {
     });
   }
 
-  
   // === VIDEO MODALS ===
   setupVideoModals() {
     const previewButtons = document.querySelectorAll('.preview-button');
@@ -100,11 +97,9 @@ class Portfolio {
   }
 
   openVideoModal(videoSrc) {
-    // Remove modal existente se houver
     const existingModal = document.querySelector('.video-modal-overlay');
     if (existingModal) existingModal.remove();
     
-    // Cria o modal
     const modal = document.createElement('div');
     modal.className = 'video-modal-overlay';
     modal.innerHTML = `
@@ -118,23 +113,16 @@ class Portfolio {
     `;
     
     document.body.appendChild(modal);
-    
-    // Ativa o modal
     setTimeout(() => modal.classList.add('active'), 10);
-    
-    // Bloqueia scroll
     document.body.style.overflow = 'hidden';
     
-    // Eventos de fechar
     const closeBtn = modal.querySelector('.close-button');
-    
     closeBtn.addEventListener('click', () => this.closeVideoModal(modal));
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) this.closeVideoModal(modal);
     });
     
-    // ESC para fechar
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
         this.closeVideoModal(modal);
@@ -147,27 +135,48 @@ class Portfolio {
   closeVideoModal(modal) {
     modal.classList.remove('active');
     document.body.style.overflow = '';
-    
     setTimeout(() => modal.remove(), 300);
   }
 
-  // === SMOOTH SCROLL ===
+  // === SMOOTH SCROLL APRIMORADO ===
   setupSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
         
-        // Ignora links vazios
         if (href === '#' || href === '#!') return;
         
         e.preventDefault();
         const target = document.querySelector(href);
         
         if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
+          const targetPosition = target.offsetTop - 80;
+          const startPosition = window.pageYOffset;
+          const distance = targetPosition - startPosition;
+          const duration = 1000;
+          let start = null;
+          
+          // Easing personalizado
+          const easeInOutCubic = (t) => {
+            return t < 0.5 
+              ? 4 * t * t * t 
+              : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+          };
+          
+          const animation = (currentTime) => {
+            if (start === null) start = currentTime;
+            const timeElapsed = currentTime - start;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const ease = easeInOutCubic(progress);
+            
+            window.scrollTo(0, startPosition + distance * ease);
+            
+            if (timeElapsed < duration) {
+              requestAnimationFrame(animation);
+            }
+          };
+          
+          requestAnimationFrame(animation);
         }
       });
     });
@@ -180,50 +189,77 @@ class Portfolio {
     
     filterButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        // Remove active de todos
         filterButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
         const filter = btn.getAttribute('data-filter');
-        projectCards.forEach(card => {
-          if (filter === 'all' || card.getAttribute('data-category') === filter) {
-            card.style.display = 'block';
+        
+        projectCards.forEach((card, index) => {
+          const category = card.getAttribute('data-category');
+          
+          if (filter === 'all' || category === filter) {
+            // Animação de entrada com delay
+            setTimeout(() => {
+              card.style.display = 'block';
+              setTimeout(() => card.classList.add('revealed'), 10);
+            }, index * 100);
           } else {
-            card.style.display = 'none';
+            card.classList.remove('revealed');
+            setTimeout(() => {
+              card.style.display = 'none';
+            }, 300);
           }
         });
       });
     });
   }
 
-  // === TYPEWRITER ANIMATION ===
+  // === TYPEWRITER APRIMORADO ===
   setupTypewriter() {
     const title = document.getElementById('typewriter-title');
     if (!title) return;
     
     const text = title.textContent;
     title.textContent = '';
+    title.style.display = 'inline-block';
+    
     let i = 0;
+    let isDeleting = false;
     
     const typeWriter = () => {
-      if (i < text.length) {
+      if (!isDeleting && i < text.length) {
         title.textContent += text.charAt(i);
         i++;
-        setTimeout(typeWriter, 100); // Velocidade de digitação
+        setTimeout(typeWriter, 80 + Math.random() * 40);
+      } else if (i === text.length) {
+        // Mantém o texto completo
+        return;
       }
     };
-    typeWriter();
+    
+    // Inicia após um delay
+    setTimeout(typeWriter, 500);
   }
 
   // === THEME TOGGLE ===
   setupThemeToggle() {
     const themeToggle = document.getElementById('theme-toggle');
-    
     if (!themeToggle) return;
     
-    // Verifica se há tema salvo no localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
+    // Verifica preferência do sistema
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Tenta carregar do localStorage, senão usa preferência do sistema
+    let savedTheme;
+    try {
+      savedTheme = localStorage.getItem('theme');
+    } catch (e) {
+      savedTheme = null;
+    }
+    
+    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    
+    if (theme === 'light') {
       document.body.classList.add('light-mode');
       themeToggle.checked = true;
     }
@@ -232,16 +268,50 @@ class Portfolio {
       document.body.classList.toggle('light-mode');
       const isLight = document.body.classList.contains('light-mode');
       
-      if (isLight) {
-        localStorage.setItem('theme', 'light');
-      } else {
-        localStorage.setItem('theme', 'dark');
+      try {
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      } catch (e) {
+        console.log('LocalStorage não disponível');
+      }
+    });
+  }
+
+  // === PARALLAX EFFECT ===
+  setupParallax() {
+    const hero = document.querySelector('.hero');
+    if (!hero) return;
+    
+    let ticking = false;
+    
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.pageYOffset;
+          
+          // Parallax no background do hero
+          const parallaxBg = hero.querySelector('::before');
+          if (hero) {
+            hero.style.backgroundPosition = `center ${scrolled * 0.3}px`;
+          }
+          
+          // Parallax nas partículas
+          const particles = document.querySelectorAll('.particle');
+          particles.forEach((particle, index) => {
+            const speed = 0.1 + (index * 0.05);
+            const yPos = -(scrolled * speed);
+            particle.style.transform = `translateY(${yPos}px)`;
+          });
+          
+          ticking = false;
+        });
+        
+        ticking = true;
       }
     });
   }
 }
 
-// === SCROLL REVEAL (OPCIONAL) ===
+// === SCROLL REVEAL APRIMORADO ===
 class ScrollReveal {
   constructor() {
     this.elements = document.querySelectorAll('.reveal');
@@ -251,22 +321,34 @@ class ScrollReveal {
   init() {
     if (!this.elements.length) return;
     
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+    
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+      entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
+          // Delay cascata para elementos na mesma seção
+          const section = entry.target.closest('.section');
+          const elementsInSection = section ? 
+            Array.from(section.querySelectorAll('.reveal')) : [];
+          const indexInSection = elementsInSection.indexOf(entry.target);
+          
+          setTimeout(() => {
+            entry.target.classList.add('revealed');
+          }, indexInSection * 100);
+          
           observer.unobserve(entry.target);
         }
       });
-    }, {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    });
+    }, observerOptions);
     
     this.elements.forEach(el => observer.observe(el));
   }
 }
-  // === CARROSSEL DE IMAGENS ===
+
+// === CARROSSEL DE IMAGENS APRIMORADO ===
 class ImageCarousel {
   constructor() {
     this.carousels = document.querySelectorAll('.carousel-container');
@@ -282,9 +364,8 @@ class ImageCarousel {
       if (images.length === 0) return;
       
       let currentIndex = 0;
-      let isHovering = false; // 👈 Controla se o mouse está em cima
+      let isHovering = false;
       
-      // Função para mudar de imagem
       const changeImage = (newIndex) => {
         images.forEach(img => img.classList.remove('active'));
         indicators.forEach(ind => ind.classList.remove('active'));
@@ -295,70 +376,122 @@ class ImageCarousel {
         currentIndex = newIndex;
       };
       
-      // Auto-rotate a cada 10 segundos
-      const intervalId = setInterval(() => {
-        const nextIndex = (currentIndex + 1) % images.length;
-        changeImage(nextIndex);
-      }, 10000);
+      // Auto-rotate
+      const startAutoRotate = () => {
+        const intervalId = setInterval(() => {
+          if (!isHovering) {
+            const nextIndex = (currentIndex + 1) % images.length;
+            changeImage(nextIndex);
+          }
+        }, 10000);
+        
+        this.intervals.set(carousel, intervalId);
+      };
       
-      this.intervals.set(carousel, intervalId);
+      startAutoRotate();
       
       // Click nos indicadores
       indicators.forEach((indicator, idx) => {
         indicator.addEventListener('click', () => {
-          // Para o intervalo atual
           clearInterval(this.intervals.get(carousel));
-          
-          // Muda para a imagem clicada
           changeImage(idx);
           
-          // Só cria novo intervalo se o mouse NÃO estiver em cima
           if (!isHovering) {
-            const newInterval = setInterval(() => {
-              const nextIndex = (currentIndex + 1) % images.length;
-              changeImage(nextIndex);
-            }, 10000);
-            this.intervals.set(carousel, newInterval);
+            startAutoRotate();
           }
         });
       });
       
-      // Pausa quando mouse está em cima
+      // Pausa/Resume no hover
       carousel.addEventListener('mouseenter', () => {
-        isHovering = true; // 👈 Marca que o mouse está em cima
-        clearInterval(this.intervals.get(carousel));
+        isHovering = true;
       });
       
-      // Retoma quando mouse sai
       carousel.addEventListener('mouseleave', () => {
-        isHovering = false; // 👈 Marca que o mouse saiu
-        const newInterval = setInterval(() => {
-          const nextIndex = (currentIndex + 1) % images.length;
-          changeImage(nextIndex);
-        }, 10000);
-        this.intervals.set(carousel, newInterval);
+        isHovering = false;
       });
     });
   }
   
-  // Limpa todos os intervalos (útil para cleanup)
   destroy() {
     this.intervals.forEach(interval => clearInterval(interval));
     this.intervals.clear();
   }
 }
 
+// === CURSOR CUSTOMIZADO (OPCIONAL) ===
+class CustomCursor {
+  constructor() {
+    this.cursor = null;
+    this.init();
+  }
+
+  init() {
+    // Cria o cursor apenas em desktop
+    if (window.innerWidth < 768) return;
+    
+    this.cursor = document.createElement('div');
+    this.cursor.className = 'custom-cursor';
+    this.cursor.style.cssText = `
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--clr-accent);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      mix-blend-mode: difference;
+      display: none;
+    `;
+    
+    document.body.appendChild(this.cursor);
+    
+    document.addEventListener('mousemove', (e) => {
+      this.cursor.style.display = 'block';
+      this.cursor.style.left = e.clientX - 10 + 'px';
+      this.cursor.style.top = e.clientY - 10 + 'px';
+    });
+    
+    // Efeito em elementos clicáveis
+    const clickables = document.querySelectorAll('a, button, .btn');
+    clickables.forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        this.cursor.style.transform = 'scale(2)';
+        this.cursor.style.borderColor = 'var(--clr-accent-alt)';
+      });
+      
+      el.addEventListener('mouseleave', () => {
+        this.cursor.style.transform = 'scale(1)';
+        this.cursor.style.borderColor = 'var(--clr-accent)';
+      });
+    });
+  }
+}
+
 // === INICIALIZAÇÃO ===
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 Portfólio carregado!');
+  console.log('🚀 Portfólio v2.0 carregado!');
   
   new Portfolio();
   new ScrollReveal();
-  new ImageCarousel(); // 👈 Inicializa o carrossel
+  new ImageCarousel();
+  
+  // Cursor customizado (opcional - descomente para ativar)
+  // new CustomCursor();
+  
+  // Animação inicial dos cards
+  setTimeout(() => {
+    const projectCards = document.querySelectorAll('.project-card');
+    projectCards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.add('revealed');
+      }, index * 100);
+    });
+  }, 500);
 });
 
 // === PERFORMANCE ===
-// Preload de fontes críticas
 if ('fonts' in document) {
   Promise.all([
     document.fonts.load('700 1em Space Grotesk'),
@@ -372,11 +505,15 @@ if ('fonts' in document) {
 if ('loading' in HTMLImageElement.prototype) {
   const images = document.querySelectorAll('img[loading="lazy"]');
   images.forEach(img => {
-    img.src = img.dataset.src;
+    if (img.dataset.src) {
+      img.src = img.dataset.src;
+    }
   });
 } else {
-  // Fallback para navegadores que não suportam lazy loading
   const script = document.createElement('script');
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
   document.body.appendChild(script);
 }
+
+// Prevent Flash of Unstyled Content
+document.documentElement.style.visibility = 'visible';
