@@ -21,17 +21,15 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        working-directory: angular-portfolio
         run: npm install
 
       - name: Build Angular
-        working-directory: angular-portfolio
         run: npx ng build --base-href /Meu_Portfolio/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: angular-portfolio/dist/angular-portfolio
+          path: dist
 
   deploy:
     needs: build
