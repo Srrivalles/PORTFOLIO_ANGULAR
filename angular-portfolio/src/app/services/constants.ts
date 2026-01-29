@@ -1,0 +1,20 @@
+// Constantes de configuração da aplicação
+export const APP_CONFIG = {
+  // Scroll
+  SCROLL_NAVBAR_THRESHOLD: 50,
+  SCROLL_BACK_TO_TOP_THRESHOLD: 300,
+  SMOOTH_SCROLL_OFFSET: 80,
+  SMOOTH_SCROLL_DURATION: 1000,
+
+  // Animações
+  ANIMATION_DELAY: 100,
+  INITIAL_ANIMATION_DELAY: 500,
+  PARALLAX_FACTOR: 0.3,
+
+  // Carousel
+  CAROUSEL_INTERVAL: 10000,
+
+  // Intersection Observer
+  INTERSECTION_THRESHOLD: 0.1,
+  INTERSECTION_ROOT_MARGIN: '0px 0px -100px 0px',
+};
