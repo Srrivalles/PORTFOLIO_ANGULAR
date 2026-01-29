@@ -26,7 +26,7 @@ jobs:
 
       - name: Build Angular
         working-directory: angular-portfolio
-        run: ng build --base-href /Meu_Portfolio/
+        run: npx ng build --base-href /Meu_Portfolio/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
