@@ -1,0 +1,49 @@
+import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy } from '@angular/core';
+import { NavbarService } from './services/navbar.service';
+import { ScrollService } from './services/scroll.service';
+import { ProjectFilterService } from './services/project-filter.service';
+import { ThemeService } from './services/theme.service';
+import { ParallaxService } from './services/parallax.service';
+import { ScrollRevealService } from './services/scroll-reveal.service';
+import { CarouselService } from './services/carousel.service';
+import { AnimationService } from './services/animation.service';
+
+@Component({
+  selector: 'app-root',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './app.html',
+  styleUrl: './app.css'
+})
+export class App implements AfterViewInit, OnDestroy {
+  constructor(
+    private navbarService: NavbarService,
+    private scrollService: ScrollService,
+    private projectFilterService: ProjectFilterService,
+    private themeService: ThemeService,
+    private parallaxService: ParallaxService,
+    private scrollRevealService: ScrollRevealService,
+    private carouselService: CarouselService,
+    private animationService: AnimationService
+  ) {}
+
+  ngAfterViewInit(): void {
+    this.navbarService.initialize();
+    this.scrollService.initialize();
+    this.projectFilterService.initialize();
+    this.themeService.initialize();
+    this.parallaxService.initialize();
+    this.scrollRevealService.initialize();
+    this.carouselService.initialize();
+    this.animationService.initializeCardAnimation();
+  }
+
+  ngOnDestroy(): void {
+    this.navbarService.cleanup();
+    this.scrollService.cleanup();
+    this.projectFilterService.cleanup();
+    this.themeService.cleanup();
+    this.parallaxService.cleanup();
+    this.scrollRevealService.cleanup();
+    this.carouselService.cleanup();
+  }
+}
